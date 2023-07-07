@@ -3,6 +3,9 @@
 
 // ignore: library_prefixes
 import 'dart:convert';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:free_chat/notificationservice/local_notification_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -16,25 +19,62 @@ class Chatscreen extends StatefulWidget {
   State<Chatscreen> createState() => _ChatscreenState();
 }
 
-class Message {
-  final String sender;
-  final String text;
+class _ChatscreenState extends State<Chatscreen> with WidgetsBindingObserver {
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   print("state");
+  //   print(state);
+  //   if (state == AppLifecycleState.resumed) {
+  //     print("on");
+  //     // App is in the foreground
+  //     online = true;
+  //     // Handle any necessary logic when the app is active
+  //   } else if (state == AppLifecycleState.paused) {
+  //     print("off");
+  //     online = false;
+  //               LocalNotificationService.createanddisplaynotification(message);
 
-  Message({required this.sender, required this.text});
-}
+  //     // App is in the background
+  //     // LocalNotificationService.createanddisplaynotification(newMessage);
+  //     // Show local notification here
+  //   } else if (state == AppLifecycleState.detached) {
+  //     online = false;
+  //               LocalNotificationService.createanddisplaynotification(message);
 
-class _ChatscreenState extends State<Chatscreen> {
+  //   }
+  // }
+
   late IO.Socket socket;
   bool hasInternet = true;
   // ignore: prefer_typing_uninitialized_variables
   var fcmtoken;
+  late bool online;
+  // Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  //   await Firebase.initializeApp();
+  // LocalNotificationService.createanddisplaynotification(message);
+  //   // Handle background message
+  // }
 
+  
+  // void _configureFirebaseMessaging() {
+  //   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //     // Handle foreground message
+  // LocalNotificationService.createanddisplaynotification(message);
+    
+  //   });
+  // }
   @override
   void initState() {
+    // didChangeAppLifecycleState()
+  // _configureFirebaseMessaging();
+    // didChangeAppLifecycleState(online as AppLifecycleState);
     noti();
     checkInternetConnection();
     initSocket();
     super.initState();
+    WidgetsBinding.instance!.addObserver(this);
   }
 
   void noti() async {
@@ -81,7 +121,7 @@ class _ChatscreenState extends State<Chatscreen> {
     var connectivityResult = await (Connectivity().checkConnectivity());
     setState(() {
       hasInternet = (connectivityResult != ConnectivityResult.none);
-      print(hasInternet);
+      // print(hasInternet);
     });
   }
 
@@ -112,11 +152,41 @@ class _ChatscreenState extends State<Chatscreen> {
       list.add('${newMessage["fcm"]}');
 
       await prefs.setStringList('myList', list);
-      print(list);
-      print("empty");
+      // print(list);
+      // print("empty");
     }
   }
 
+  // Future<void> showNotification(
+  //   FlutterLocalNotificationsPlugin notificationsPlugin,
+  //   String title,
+  //   String body,
+  //   int notificationId,
+  // ) async {
+  //   print(title);
+  //   const AndroidNotificationDetails androidPlatformChannelSpecifics =
+  //       AndroidNotificationDetails(
+  //     'channel_id', // Replace with your own channel ID
+  //     'channel_name', // Replace with your own channel name
+  //     // 'channel_description', // Replace with your own channel description
+  //     importance: Importance.max,
+  //     priority: Priority.high,
+  //     ongoing: true,
+  //      styleInformation: BigTextStyleInformation(''),
+  //   );
+
+  //   const NotificationDetails platformChannelSpecifics =
+  //       NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  //   await notificationsPlugin.show(
+  //     notificationId,
+  //     title,
+  //     body,
+  //     platformChannelSpecifics,
+  //   );
+  // }
+// ignore: prefer_typing_uninitialized_variables
+  late dynamic message;
   initSocket() {
     checkInternetConnection();
     if (hasInternet) {
@@ -137,8 +207,20 @@ class _ChatscreenState extends State<Chatscreen> {
           text.add(
               {"sender": newMessage["name"], "Text": newMessage["message"]});
         });
-        print(newMessage["fcm"]);
+        message = newMessage;
+        // Show local notification here
+        // if (online == false) {
+          // LocalNotificationService.createanddisplaynotification(newMessage);
+        // }
+
         fcmtokenfun(newMessage);
+        // await showNotification(
+        //   FlutterLocalNotificationsPlugin(),
+        //   'Notification Title',
+        //   'Notification Body',
+        //   0, // Replace with your desired notification ID
+        // );
+        print(newMessage["fcm"]);
       });
     } else {
       showDialog(
@@ -164,11 +246,14 @@ class _ChatscreenState extends State<Chatscreen> {
   @override
   void dispose() {
     // Disconnect from the socket server
+    online = false;
+    WidgetsBinding.instance!.removeObserver(this);
+    print("object");
     socket.disconnect();
     super.dispose();
   }
 
-  void sendMessage() {
+  void sendMessage() async {
     checkInternetConnection();
     // Emit the 'message' event to the server
     if (hasInternet) {
@@ -178,7 +263,13 @@ class _ChatscreenState extends State<Chatscreen> {
       // print(map);
       socket.emit('message', map);
       textController.clear();
-      sendnoti(map);
+      
+        sendnoti(map);
+      
+
+      // Show local notification here
+
+      // Show local notification here
     } else {
       showDialog(
         context: context,
