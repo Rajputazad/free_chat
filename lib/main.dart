@@ -6,11 +6,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:free_chat/notificationservice/local_notification_service.dart';
 
 Future<void> backgroundHandler(RemoteMessage message) async {
-  	print(message.data.toString());
- 	print(message.notification!.title);
-  // LocalNotificationService.createanddisplaynotification(message);
-    await Firebase.initializeApp();
+  // 	print(message.data.toString());
+ 	// print(message.notification!.title);
   LocalNotificationService.createanddisplaynotification(message);
+  
 
 	}
 

@@ -55,21 +55,21 @@ class _ChatscreenState extends State<Chatscreen> with WidgetsBindingObserver {
   //   // Handle background message
   // }
 
-  
   // void _configureFirebaseMessaging() {
   //   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
   //     // Handle foreground message
   // LocalNotificationService.createanddisplaynotification(message);
-    
+
   //   });
   // }
   @override
   void initState() {
     // didChangeAppLifecycleState()
-  // _configureFirebaseMessaging();
+    // _configureFirebaseMessaging();
     // didChangeAppLifecycleState(online as AppLifecycleState);
+    // clearSharedPreferences();
     noti();
     checkInternetConnection();
     initSocket();
@@ -125,36 +125,58 @@ class _ChatscreenState extends State<Chatscreen> with WidgetsBindingObserver {
     });
   }
 
+  Future<void> clearSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
   void fcmtokenfun(newMessage) async {
-    final prefs = await SharedPreferences.getInstance();
-
+    var prefs = await SharedPreferences.getInstance();
+//  Set<String>? uniqueSet = Set<String>();
     List<String>? list = prefs.getStringList('myList');
-    // print(list);
-    if (list != null) {
-      List<String> copyList = List.from(list);
-      // print("isNotEmpty");
-      for (var element in copyList) {
-        // print(element);
-        if (element != newMessage["fcm"]) {
-          list.add('${newMessage["fcm"]}');
-          // print(list);
+    Set<String>? uniqueListAsList = list?.toSet();
+    // uniqueListAsList ??= {};
+    uniqueListAsList?.add('${newMessage["fcm"]}');
+  List<String>? uniqueList = uniqueListAsList?.toList();
+if(uniqueList!=null){
+    print(uniqueList);
+    await prefs.setStringList('myList', uniqueList);
 
-          await prefs.setStringList('myList', list);
-        } else {
-          // print("yes list");
-        }
-      }
-    } else {
-      // ignore: prefer_typing_uninitialized_variables
-      List<String> list = [];
+}else{
+   List<String> list = [];
       // var token = newMessage["fcm"];
       // print(token);
       list.add('${newMessage["fcm"]}');
 
       await prefs.setStringList('myList', list);
-      // print(list);
-      // print("empty");
-    }
+}
+  
+
+    // if (list != null) {
+    //   List<String> copyList = List.from(list);
+    //   // print("isNotEmpty");
+    //   for (var element in copyList) {
+    //     // print(element);
+    //     if (element == '${newMessage["fcm"]}') {
+    //       print("yes list");
+
+    //       await prefs.setStringList('myList', list);
+    //     } else {
+    //       list.add('${newMessage["fcm"]}');
+    //       print(list);
+    //     }
+    //   }
+    // } else {
+    // ignore: prefer_typing_uninitialized_variables
+    //   List<String> list = [];
+    //   // var token = newMessage["fcm"];
+    //   // print(token);
+    //   list.add('${newMessage["fcm"]}');
+
+    //   await prefs.setStringList('myList', list);
+    //   // print(list);
+    //   print("empty");
+    // }
   }
 
   // Future<void> showNotification(
@@ -210,7 +232,7 @@ class _ChatscreenState extends State<Chatscreen> with WidgetsBindingObserver {
         message = newMessage;
         // Show local notification here
         // if (online == false) {
-          // LocalNotificationService.createanddisplaynotification(newMessage);
+        // LocalNotificationService.createanddisplaynotification(newMessage);
         // }
 
         fcmtokenfun(newMessage);
@@ -263,9 +285,8 @@ class _ChatscreenState extends State<Chatscreen> with WidgetsBindingObserver {
       // print(map);
       socket.emit('message', map);
       textController.clear();
-      
-        sendnoti(map);
-      
+
+      sendnoti(map);
 
       // Show local notification here
 
