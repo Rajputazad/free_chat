@@ -5,7 +5,7 @@ package="com.example.free_chat"
  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.VIBRATE" />
     <application
-        android:label="free_chat"
+        android:label="Free chat"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -24,9 +24,9 @@ package="com.example.free_chat"
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
-              <!-- <meta-data
+              <meta-data
                 android:name="com.google.firebase.messaging.default_notification_channel_id"
-                android:value="pushnotificationapp"/> -->
+                android:value="pushnotificationapp"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

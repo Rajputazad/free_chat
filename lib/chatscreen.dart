@@ -78,9 +78,13 @@ class _ChatscreenState extends State<Chatscreen> with WidgetsBindingObserver {
   }
 
   void noti() async {
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    fcmtoken = fcmToken;
-    print(fcmToken);
+    try {
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  fcmtoken = fcmToken;
+  print(fcmToken);
+} on Exception catch (e) {
+  // TODO
+}
   }
 
   Future<void> sendnoti(map) async {
